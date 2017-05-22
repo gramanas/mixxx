@@ -3,14 +3,16 @@
 #include <QDir>
 #include <QTemporaryFile>
 
+#include "test/librarytest.h"
+
 #include "library/searchqueryparser.h"
 #include "util/assert.h"
 
-class SearchQueryParserTest : public testing::Test {
+class SearchQueryParserTest : public LibraryTest {
   protected:
     SearchQueryParserTest()
             : m_database(QSqlDatabase::addDatabase("QSQLITE")),
-              m_parser(m_database) {
+              m_parser(collection()) {
         QTemporaryFile databaseFile("mixxxdb.sqlite");
         RELEASE_ASSERT(databaseFile.open());
         m_database.setHostName("localhost");

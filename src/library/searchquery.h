@@ -14,6 +14,7 @@
 #include "proto/keys.pb.h"
 #include "util/assert.h"
 #include "util/memory.h"
+#include "library/crate/cratestorage.h"
 
 QVariant getTrackValueForColumn(const TrackPointer& pTrack, const QString& column);
 
@@ -88,6 +89,21 @@ class TextFilterNode : public QueryNode {
     QSqlDatabase m_database;
     QStringList m_sqlColumns;
     QString m_argument;
+};
+
+class CrateFilterNode : public QueryNode {
+  public:
+    CrateFilterNode(const QString& crateNameLike,
+                    const CrateStorage* pCrateStorage);
+
+    bool match(const TrackPointer& pTrack) const override;
+    QString toSql() const override;
+
+  private:
+    QString m_crateNameLike;
+    const CrateStorage* m_pCrateStorage;
+    mutable bool m_matchInitialized;
+    mutable std::vector<TrackId> m_matchingTrackIds;
 };
 
 class NumericFilterNode : public QueryNode {
