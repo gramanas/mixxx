@@ -52,7 +52,8 @@ QVariant getTrackValueForColumn(const TrackPointer& pTrack, const QString& colum
         return static_cast<int>(pTrack->getKey());
     } else if (column == LIBRARYTABLE_BPM_LOCK) {
         return pTrack->isBpmLocked();
-    }
+    } // TODO(gramanas) Add getCrates that returns a QStringList with the crates a song is on
+    // used in CrateFilterNode::match()
 
     return QVariant();
 }
@@ -168,10 +169,25 @@ QString TextFilterNode::toSql() const {
 
 bool CrateFilterNode::match(const TrackPointer& pTrack) const {
     // TODO(gramanas): implement match
+    // Where should I check if a track exists on a crate?
+    //QVariant value = getTrackValueForColumn(pTrack, m_sqlColumn);
+    if (!value.isValid() || !qVariantCanConvert<QString>(value)) {
+        continue;
+    }
+    
+    if (value.toString().contains(m_argument, Qt::CaseInsensitive)) {
+        return true;
+    }
+
+    return false;
 }
 
 QString CrateFilterNode::toSql() const {
     // TODO(gramanas): implemenet toSql
+    FieldEscaper escaper(m_database);
+    QString escapedArgument = escaper.escapeString(kSqlLikeMatchAll + m_argument + kSqlLikeMatchAll);
+
+    QString searchString << QString("%1 LIKE %2").arg(sqlColumn, escapedArgument);
 }
 
 NumericFilterNode::NumericFilterNode(const QStringList& sqlColumns)
@@ -329,3 +345,4 @@ QString KeyFilterNode::toSql() const {
     }
     return concatSqlClauses(searchClauses, "OR");
 }
+    
