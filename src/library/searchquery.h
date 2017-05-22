@@ -90,6 +90,22 @@ class TextFilterNode : public QueryNode {
     QString m_argument;
 };
 
+class CrateFilterNode : public QueryNode {
+  public:
+    CrateFilterNode(); {}
+
+    // Should look though the crates and if the song is contained
+    // in one them
+    bool match(const TrackPointer& pTrack) const override;
+    // Should convert Sql string to crate_tracks JOIN crates so I can search with the names
+    QString toSql() const override;
+
+  private:
+    QSqlDatabase m_database;
+    // rest
+    QString m_argument;
+}
+
 class NumericFilterNode : public QueryNode {
   public:
     NumericFilterNode(const QStringList& sqlColumns, const QString& argument);

@@ -12,7 +12,6 @@
 
 namespace {
 
-const QString CRATETABLE_NAME = "name";
 const QString CRATETABLE_LOCKED = "locked";
 
 const QString CRATE_SUMMARY_VIEW = "crate_summary";

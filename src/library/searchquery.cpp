@@ -166,6 +166,14 @@ QString TextFilterNode::toSql() const {
     return concatSqlClauses(searchClauses, "OR");
 }
 
+bool CrateFilterNode::match(const TrackPointer& pTrack) const {
+    // TODO(gramanas): implement match
+}
+
+QString CrateFilterNode::toSql() const {
+    // TODO(gramanas): implemenet toSql
+}
+
 NumericFilterNode::NumericFilterNode(const QStringList& sqlColumns)
         : m_sqlColumns(sqlColumns),
           m_bOperatorQuery(false),
