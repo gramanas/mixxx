@@ -170,14 +170,15 @@ QString TextFilterNode::toSql() const {
 bool CrateFilterNode::match(const TrackPointer& pTrack) const {
     // TODO(gramanas): implement match
     // Where should I check if a track exists on a crate?
+
     //QVariant value = getTrackValueForColumn(pTrack, m_sqlColumn);
-    if (!value.isValid() || !qVariantCanConvert<QString>(value)) {
-        continue;
-    }
+    //if (!value.isValid() || !qVariantCanConvert<QString>(value)) {
+    //    continue;
+    //}
     
-    if (value.toString().contains(m_argument, Qt::CaseInsensitive)) {
-        return true;
-    }
+    //if (value.toString().contains(m_argument, Qt::CaseInsensitive)) {
+    //    return true;
+    //}
 
     return false;
 }
@@ -187,7 +188,11 @@ QString CrateFilterNode::toSql() const {
     FieldEscaper escaper(m_database);
     QString escapedArgument = escaper.escapeString(kSqlLikeMatchAll + m_argument + kSqlLikeMatchAll);
 
-    QString searchString << QString("%1 LIKE %2").arg(sqlColumn, escapedArgument);
+    QStringList searchClauses;
+    for (const auto& sqlColumn: m_sqlColumns) {
+        searchClauses << QString("%1 LIKE %2").arg(sqlColumn, escapedArgument);
+    }
+    return concatSqlClauses(searchClauses, "OR");
 }
 
 NumericFilterNode::NumericFilterNode(const QStringList& sqlColumns)

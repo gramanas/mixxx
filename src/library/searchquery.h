@@ -93,10 +93,10 @@ class TextFilterNode : public QueryNode {
 class CrateFilterNode : public QueryNode {
   public:
     CrateFilterNode(const QSqlDatabase& database,
-                    const QString& sqlColumn,
+                    const QStringList& sqlColumn,
                     const QString& argument)
         : m_database(database),
-          m_sqlColumn(sqlColumn),
+          m_sqlColumns(sqlColumn),
           m_argument(argument) {
     }
 
@@ -108,9 +108,9 @@ class CrateFilterNode : public QueryNode {
 
   private:
     QSqlDatabase m_database;
-    QString m_sqlColumn;
+    QStringList m_sqlColumns;
     QString m_argument;
-}
+};
 
 class NumericFilterNode : public QueryNode {
   public:
