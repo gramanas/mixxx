@@ -9,15 +9,19 @@
 #include "track/track.h"
 #include "util/class.h"
 
+// forward declarations
+class CrateStorage;
+
 class SearchQueryParser {
   public:
-    SearchQueryParser(QSqlDatabase& database);
+    SearchQueryParser(QSqlDatabase& database, const CrateStorage* crates);
     virtual ~SearchQueryParser();
 
     std::unique_ptr<QueryNode> parseQuery(
             const QString& query,
             const QStringList& searchColumns,
             const QString& extraFilter) const;
+
 
   private:
     void parseTokens(QStringList tokens,
@@ -39,6 +43,8 @@ class SearchQueryParser {
     QRegExp m_crateFilterMatcher;
     QRegExp m_numericFilterMatcher;
     QRegExp m_specialFilterMatcher;
+
+    const CrateStorage* m_pCrates;
 
     DISALLOW_COPY_AND_ASSIGN(SearchQueryParser);
 };
