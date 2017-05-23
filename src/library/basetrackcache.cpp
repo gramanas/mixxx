@@ -14,7 +14,7 @@
 
 namespace {
 
-const bool sDebug = false;
+const bool sDebug = true;
 
 }  // namespace
 

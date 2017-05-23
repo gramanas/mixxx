@@ -16,7 +16,6 @@ SearchQueryParser::SearchQueryParser(QSqlDatabase& database)
                   << "grouping"
                   << "comment"
                   << "location";
-    m_crateFilters << "crate";
     m_numericFilters << "year"
                      << "track"
                      << "bpm"
@@ -53,13 +52,13 @@ SearchQueryParser::SearchQueryParser(QSqlDatabase& database)
     m_fieldToSqlColumns["crate"] << "crates.name";
     
     m_allFilters.append(m_textFilters);
-    m_allFilters.append(m_crateFilters);
+    m_allFilters.append("crate");
     m_allFilters.append(m_numericFilters);
     m_allFilters.append(m_specialFilters);
 
     m_fuzzyMatcher = QRegExp(QString("^~(%1)$").arg(m_allFilters.join("|")));
     m_textFilterMatcher = QRegExp(QString("^-?(%1):(.*)$").arg(m_textFilters.join("|")));
-    m_crateFilterMatcher = QRegExp(QString("^-?(%1):(.*)$").arg(m_crateFilters.join("|")));
+    m_crateFilterMatcher = QRegExp(QString("^-?(crate):(.*)$"));
     m_numericFilterMatcher = QRegExp(QString("^-?(%1):(.*)$").arg(m_numericFilters.join("|")));
     m_specialFilterMatcher = QRegExp(QString("^[~-]?(%1):(.*)$").arg(m_specialFilters.join("|")));
 }
@@ -119,10 +118,11 @@ void SearchQueryParser::parseTokens(QStringList tokens,
             continue;
         }
 
+        bool negate = token.startsWith(kNegatePrefix);
+        
         if (m_fuzzyMatcher.indexIn(token) != -1) {
             // TODO(XXX): implement this feature.
         } else if (m_textFilterMatcher.indexIn(token) != -1) {
-            bool negate = token.startsWith(kNegatePrefix);
             QString field = m_textFilterMatcher.cap(1);
             QString argument = getTextArgument(
                 m_textFilterMatcher.cap(2), &tokens).trimmed();
@@ -136,20 +136,21 @@ void SearchQueryParser::parseTokens(QStringList tokens,
                 pQuery->addNode(std::move(pNode));
             }
         } else if (m_crateFilterMatcher.indexIn(token) != -1) { 
-            // might not work with negate
-            bool negate = token.startsWith(kNegatePrefix);
-            QString field = m_crateFilterMatcher.cap(1);
+            QString field = "crate";
             QString argument = getTextArgument(
                 m_crateFilterMatcher.cap(2), &tokens).trimmed();
 
+
+            // USE ID STRINGS
             if (!argument.isEmpty()) {
                 std::unique_ptr<QueryNode> pNode(std::make_unique<CrateFilterNode>(
                     m_database, m_fieldToSqlColumns[field], argument));
+                if (negate) {
+                    pNode = std::make_unique<NotNode>(std::move(pNode));
+                }
+                pQuery->addNode(std::move(pNode));
             }
-
-            
         } else if (m_numericFilterMatcher.indexIn(token) != -1) {
-            bool negate = token.startsWith(kNegatePrefix);
             QString field = m_numericFilterMatcher.cap(1);
             QString argument = getTextArgument(
                 m_numericFilterMatcher.cap(2), &tokens).trimmed();
@@ -164,7 +165,6 @@ void SearchQueryParser::parseTokens(QStringList tokens,
                 pQuery->addNode(std::move(pNode));
             }
         } else if (m_specialFilterMatcher.indexIn(token) != -1) {
-            bool negate = token.startsWith(kNegatePrefix);
             bool fuzzy = token.startsWith(kFuzzyPrefix);
             QString field = m_specialFilterMatcher.cap(1);
             QString argument = getTextArgument(
@@ -200,7 +200,6 @@ void SearchQueryParser::parseTokens(QStringList tokens,
             }
         } else {
             // If no advanced search feature matched, treat it as a search term.
-            bool negate = token.startsWith(kNegatePrefix);
             if (negate) {
                 token = token.mid(1);
             }

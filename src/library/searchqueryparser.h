@@ -29,7 +29,6 @@ class SearchQueryParser {
 
     QSqlDatabase m_database;
     QStringList m_textFilters;
-    QStringList m_crateFilters;
     QStringList m_numericFilters;
     QStringList m_specialFilters;
     QStringList m_allFilters;
