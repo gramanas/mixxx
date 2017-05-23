@@ -185,15 +185,26 @@ bool CrateFilterNode::match(const TrackPointer& pTrack) const {
 
 QString CrateFilterNode::toSql() const {
     // TODO(gramanas): implemenet toSql
-    FieldEscaper escaper(m_database);
-    QString escapedArgument = escaper.escapeString(kSqlLikeMatchAll + m_argument + kSqlLikeMatchAll);
+    // This has to return "id IN (id's in crate)"
 
-    QStringList searchClauses;
-    for (const auto& sqlColumn: m_sqlColumns) {
-        searchClauses << QString("%1 LIKE %2").arg(sqlColumn, escapedArgument);
+    // FieldEscaper escaper(m_database);
+    // QString escapedArgument = escaper.escapeString(kSqlLikeMatchAll + m_argument + kSqlLikeMatchAll);
+
+    // QStringList searchClauses;
+    // for (const auto& sqlColumn: m_sqlColumns) {
+    //     searchClauses << QString("%1 LIKE %2").arg(sqlColumn, escapedArgument);
+    // }
+    // return concatSqlClauses(searchClauses, "OR");
+
+    // TODO(gramanas) GOTTA BRING crateStorage::formatSubselect... results here
+    QString es = "999";
+    for (int i = 1000; i < 1020; i++) {
+        es = es % "," % QString::number(i);
     }
-    return concatSqlClauses(searchClauses, "OR");
+    return QString("id IN (%1)").arg(es);
 }
+
+//QString CrateFilterNode::getTrackIds
 
 NumericFilterNode::NumericFilterNode(const QStringList& sqlColumns)
         : m_sqlColumns(sqlColumns),
