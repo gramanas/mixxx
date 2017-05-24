@@ -14,7 +14,6 @@
 #include "proto/keys.pb.h"
 #include "util/assert.h"
 #include "util/memory.h"
-#include "crate/crate.h"
 #include "crate/cratestorage.h"
 
 
@@ -97,27 +96,19 @@ class CrateFilterNode : public QueryNode {
   public:
     CrateFilterNode(const QSqlDatabase& database,
                     const QString& sqlColumn,
-                    const QString& argument,
-                    const CrateStorage* crates)
-        : m_database(database),
-          m_sqlColumn(sqlColumn),
-          m_argument(argument),
-          m_pCrates(crates) {
-    }
+                    const QString& argument);
 
-    // Should look though the crates and if the song is contained
-    // in one them
     bool match(const TrackPointer& pTrack) const override;
-    // Should convert Sql string to crate_tracks JOIN crates so I can search with the names
     QString toSql() const override;
-    QString getTrackIds(const QString& crateName) const;
 
   private:
-    Crate m_crate;
-    const CrateStorage* m_pCrates;
+    void getTrackIds();
+
     QSqlDatabase m_database;
     QString m_sqlColumn;
     QString m_argument;
+    // Stores the track ID's in the user specified crate
+    QStringList m_trackIds;
 };
 
 class NumericFilterNode : public QueryNode {

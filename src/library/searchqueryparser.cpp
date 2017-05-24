@@ -5,9 +5,8 @@
 const char* kNegatePrefix = "-";
 const char* kFuzzyPrefix = "~";
 
-SearchQueryParser::SearchQueryParser(QSqlDatabase& database, const CrateStorage* crates)
-    : m_database(database),
-      m_pCrates(crates) {
+SearchQueryParser::SearchQueryParser(QSqlDatabase& database)
+    : m_database(database) {
     m_textFilters << "artist"
                   << "album_artist"
                   << "album"
@@ -141,11 +140,9 @@ void SearchQueryParser::parseTokens(QStringList tokens,
             QString argument = getTextArgument(
                 m_crateFilterMatcher.cap(2), &tokens).trimmed();
 
-
-            // USE ID STRINGS
             if (!argument.isEmpty()) {
                 std::unique_ptr<QueryNode> pNode(std::make_unique<CrateFilterNode>(
-                    m_database, m_fieldToSqlColumns[field][0], argument, m_pCrates));
+                    m_database, m_fieldToSqlColumns[field][0], argument));
                 if (negate) {
                     pNode = std::make_unique<NotNode>(std::move(pNode));
                 }
