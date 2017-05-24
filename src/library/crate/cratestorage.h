@@ -279,6 +279,9 @@ class CrateStorage: public SqlStorage {
     static QString formatSubselectQueryForCrateTrackIds(
             CrateId crateId); // no db access
 
+    // The name must be escaped with FieldEscaper
+    static QString formatSubselectQueryForCrateTrackIdsByEscapedName(
+                                                              const QString& crateName); 
     // Select the track ids of a crate or the crate ids of a track respectively.
     // The results are sorted (ascending) by the target id, i.e. the id that is
     // not provided for filtering. This enables the caller to perform efficient

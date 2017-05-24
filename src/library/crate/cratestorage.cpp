@@ -3,6 +3,7 @@
 #include "library/crate/crateschema.h"
 #include "library/dao/trackschema.h"
 
+#include "util/db/sqllikewildcards.h"
 #include "util/db/dbconnection.h"
 #include "util/db/sqltransaction.h"
 #include "util/db/fwdsqlquery.h"
@@ -407,6 +408,19 @@ QString CrateStorage::formatSubselectQueryForCrateTrackIds(
             CRATE_TRACKS_TABLE,
             CRATETRACKSTABLE_CRATEID,
             crateId.toString());
+}
+
+//static
+QString CrateStorage::formatSubselectQueryForCrateTrackIdsByEscapedName(
+        const QString& crateName) {
+    return QString("SELECT %1 FROM %2 JOIN %3 ON %4 = %5 WHERE %6 LIKE %7").arg(
+            CRATETRACKSTABLE_TRACKID,
+            CRATE_TRACKS_TABLE,
+            CRATE_TABLE,
+            CRATETRACKSTABLE_CRATEID,
+            CRATETABLE_ID,
+            CRATETABLE_NAME,
+            crateName);
 }
 
 
