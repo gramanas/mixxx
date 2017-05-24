@@ -411,7 +411,7 @@ QString CrateStorage::formatSubselectQueryForCrateTrackIds(
 }
 
 //static
-QString CrateStorage::formatSubselectQueryForCrateTrackIdsByEscapedName(
+QString CrateStorage::formatQueryForTrackIdsByEscapedName(
         const QString& crateName) {
     return QString("SELECT %1 FROM %2 JOIN %3 ON %4 = %5 WHERE %6 LIKE %7").arg(
             CRATETRACKSTABLE_TRACKID,

@@ -95,7 +95,6 @@ class TextFilterNode : public QueryNode {
 class CrateFilterNode : public QueryNode {
   public:
     CrateFilterNode(const QSqlDatabase& database,
-                    const QString& sqlColumn,
                     const QString& argument);
 
     bool match(const TrackPointer& pTrack) const override;
@@ -105,7 +104,6 @@ class CrateFilterNode : public QueryNode {
     void getTrackIds();
 
     QSqlDatabase m_database;
-    QString m_sqlColumn;
     QString m_argument;
     // Stores the track ID's in the user specified crate
     QStringList m_trackIds;

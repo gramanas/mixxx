@@ -9,7 +9,7 @@
 
 namespace {
 
-const bool sDebug = true;
+const bool sDebug = false;
 
 }  // namespace
 
@@ -58,8 +58,7 @@ QVariant getTrackValueForColumn(const TrackPointer& pTrack, const QString& colum
         return static_cast<int>(pTrack->getKey());
     } else if (column == LIBRARYTABLE_BPM_LOCK) {
         return pTrack->isBpmLocked();
-    } // TODO(gramanas) Add getCrates that returns a QStringList with the crates a song is on
-    // used in CrateFilterNode::match()
+    }
 
     return QVariant();
 }
@@ -174,20 +173,18 @@ QString TextFilterNode::toSql() const {
 }
 
 CrateFilterNode::CrateFilterNode(const QSqlDatabase& database,
-                                 const QString& sqlColumn,
                                  const QString& argument)
     : m_database(database),
-      m_sqlColumn(sqlColumn),
       m_argument(argument) {
     getTrackIds();
-    }
+}
 
 void CrateFilterNode::getTrackIds() {
     FieldEscaper escaper(m_database);
     QString escapedArgument = escaper.escapeString(kSqlLikeMatchAll + m_argument + kSqlLikeMatchAll);
 
     QSqlQuery query(m_database);
-    QString queryString = CrateStorage::formatSubselectQueryForCrateTrackIdsByEscapedName(escapedArgument);
+    QString queryString = CrateStorage::formatQueryForTrackIdsByEscapedName(escapedArgument);
     query.setForwardOnly(true);
     query.prepare(queryString);
 
@@ -203,10 +200,8 @@ void CrateFilterNode::getTrackIds() {
 
 bool CrateFilterNode::match(const TrackPointer& pTrack) const {
     QString id = pTrack->getId().toString();
-    for (const QString& it : m_trackIds) {
-        if (it == id) {
-            return true;
-        }
+    if (m_trackIds.contains(id)) {
+        return true;
     }
     return false;
 }
