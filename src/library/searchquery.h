@@ -106,7 +106,7 @@ class CrateFilterNode : public QueryNode {
     QSqlDatabase m_database;
     QString m_argument;
     // Stores the track ID's in the user specified crate
-    QStringList m_trackIds;
+    QList<TrackId> m_trackIds;
 };
 
 class NumericFilterNode : public QueryNode {

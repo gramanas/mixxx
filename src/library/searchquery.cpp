@@ -184,7 +184,7 @@ void CrateFilterNode::getTrackIds() {
     QString escapedArgument = escaper.escapeString(kSqlLikeMatchAll + m_argument + kSqlLikeMatchAll);
 
     QSqlQuery query(m_database);
-    QString queryString = CrateStorage::formatQueryForTrackIdsByEscapedName(escapedArgument);
+    QString queryString = CrateStorage::formatQueryForTrackIdsByCrateName(escapedArgument);
     query.setForwardOnly(true);
     query.prepare(queryString);
 
@@ -193,21 +193,23 @@ void CrateFilterNode::getTrackIds() {
             qDebug() << "Crate filter query: " << queryString;
         }
         while (query.next()) {
-            m_trackIds << query.value(0).toString();
+            m_trackIds.append(TrackId(query.value(0)));
         }
     }
 }
 
 bool CrateFilterNode::match(const TrackPointer& pTrack) const {
-    QString id = pTrack->getId().toString();
-    if (m_trackIds.contains(id)) {
-        return true;
-    }
-    return false;
+    return m_trackIds.contains(pTrack->getId());
 }
 
 QString CrateFilterNode::toSql() const {
-    return QString("id IN (%1)").arg(m_trackIds.join(","));
+    QStringList trackIds;
+
+    for (const auto& it : m_trackIds) {
+        trackIds << it.toString();
+    }
+
+    return QString("id IN (%1)").arg(trackIds.join(","));
 }
 
 NumericFilterNode::NumericFilterNode(const QStringList& sqlColumns)
