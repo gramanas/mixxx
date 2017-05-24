@@ -48,7 +48,6 @@ SearchQueryParser::SearchQueryParser(QSqlDatabase& database)
     m_fieldToSqlColumns["rating"] << "rating";
     m_fieldToSqlColumns["location"] << "location";
     m_fieldToSqlColumns["datetime_added"] << "datetime_added";
-    // check this
     m_fieldToSqlColumns["crate"] << "crates.name";
     
     m_allFilters.append(m_textFilters);
