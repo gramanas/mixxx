@@ -7,6 +7,12 @@
 #include "library/dao/trackschema.h"
 #include "util/db/sqllikewildcards.h"
 
+namespace {
+
+const bool sDebug = true;
+
+}  // namespace
+
 QVariant getTrackValueForColumn(const TrackPointer& pTrack, const QString& column) {
     if (column == LIBRARYTABLE_ARTIST) {
         return pTrack->getArtist();
@@ -167,54 +173,46 @@ QString TextFilterNode::toSql() const {
     return concatSqlClauses(searchClauses, "OR");
 }
 
+CrateFilterNode::CrateFilterNode(const QSqlDatabase& database,
+                                 const QString& sqlColumn,
+                                 const QString& argument)
+    : m_database(database),
+      m_sqlColumn(sqlColumn),
+      m_argument(argument) {
+    getTrackIds();
+    }
+
+void CrateFilterNode::getTrackIds() {
+    FieldEscaper escaper(m_database);
+    QString escapedArgument = escaper.escapeString(kSqlLikeMatchAll + m_argument + kSqlLikeMatchAll);
+
+    QSqlQuery query(m_database);
+    QString queryString = CrateStorage::formatSubselectQueryForCrateTrackIdsByEscapedName(escapedArgument);
+    query.setForwardOnly(true);
+    query.prepare(queryString);
+
+    if (query.exec()) {
+        if (sDebug) {
+            qDebug() << "Crate filter query: " << queryString;
+        }
+        while (query.next()) {
+            m_trackIds << query.value(0).toString();
+        }
+    }
+}
+
 bool CrateFilterNode::match(const TrackPointer& pTrack) const {
-    // TODO(gramanas): implement match
-    // Where should I check if a track exists on a crate?
-
-    //QVariant value = getTrackValueForColumn(pTrack, m_sqlColumn);
-    //if (!value.isValid() || !qVariantCanConvert<QString>(value)) {
-    //    continue;
-    //}
-    
-    //if (value.toString().contains(m_argument, Qt::CaseInsensitive)) {
-    //    return true;
-    //}
-
+    QString id = pTrack->getId().toString();
+    for (const QString& it : m_trackIds) {
+        if (it == id) {
+            return true;
+        }
+    }
     return false;
 }
 
 QString CrateFilterNode::toSql() const {
-    // TODO(gramanas): implemenet toSql
-    // This has to return "id IN (id's in crate)"
-
-    FieldEscaper escaper(m_database);
-    QString escapedArgument = escaper.escapeString(m_argument);
-
-    // QStringList searchClauses;
-    // for (const auto& sqlColumn: m_sqlColumns) {
-    //     searchClauses << QString("%1 LIKE %2").arg(sqlColumn, escapedArgument);
-    // }
-    // return concatSqlClauses(searchClauses, "OR");
-
-    // TODO(gramanas) GOTTA BRING crateStorage::formatSubselect... results here
-    
-    return QString("id IN (%1)").arg(getTrackIds(escapedArgument));
-}
-
-QString CrateFilterNode::getTrackIds(const QString& crateName) const{
-    m_pCrates->readCrateByName(crateName, &m_crate);
-
-    FwdSqlQuery query(m_database, m_pCrates->formatSubselectQueryForCrateTrackIds(m_crate.getId()));
-
-    if (query.execPrepared()){
-        
-    }
-    
-    QString es = "999";
-    for (int i = 1000; i < 1020; i++) {
-        es = es % "," % QString::number(i);
-    }
-    return es;
+    return QString("id IN (%1)").arg(m_trackIds.join(","));
 }
 
 NumericFilterNode::NumericFilterNode(const QStringList& sqlColumns)
