@@ -411,9 +411,9 @@ QString CrateStorage::formatSubselectQueryForCrateTrackIds(
 }
 
 //static
-QString CrateStorage::formatQueryForTrackIdsByCrateName(
+QString CrateStorage::formatQueryForTrackIdsByCrateNameLike(
         const QString& crateName) {
-    return QString("SELECT %1 FROM %2 JOIN %3 ON %4 = %5 WHERE %6 LIKE %7").arg(
+    return QString("SELECT DISTINCT %1 FROM %2 JOIN %3 ON %4 = %5 WHERE %6 LIKE %7 ORDER BY %1").arg(
             CRATETRACKSTABLE_TRACKID,
             CRATE_TRACKS_TABLE,
             CRATE_TABLE,
