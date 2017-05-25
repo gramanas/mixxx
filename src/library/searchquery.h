@@ -14,7 +14,7 @@
 #include "proto/keys.pb.h"
 #include "util/assert.h"
 #include "util/memory.h"
-#include "crate/cratestorage.h"
+#include "library/trackcollection.h"
 
 
 QVariant getTrackValueForColumn(const TrackPointer& pTrack, const QString& column);
@@ -94,19 +94,19 @@ class TextFilterNode : public QueryNode {
 
 class CrateFilterNode : public QueryNode {
   public:
-    CrateFilterNode(const QSqlDatabase& database,
-                    const QString& argument);
+    CrateFilterNode(const QString& argument,
+                    TrackCollection* pTrackCollection);
 
     bool match(const TrackPointer& pTrack) const override;
     QString toSql() const override;
 
   private:
-    void getTrackIds();
+    void init();
 
-    QSqlDatabase m_database;
     QString m_argument;
+    TrackCollection* m_pTrackCollection;
     // Stores the track ID's in the user specified crate
-    QList<TrackId> m_trackIds;
+    std::vector<TrackId> m_trackIds;
 };
 
 class NumericFilterNode : public QueryNode {

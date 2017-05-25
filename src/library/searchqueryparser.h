@@ -11,7 +11,11 @@
 
 class SearchQueryParser {
   public:
-    SearchQueryParser(QSqlDatabase& database);
+    SearchQueryParser(TrackCollection* pTrackCollection);
+    SearchQueryParser(QSqlDatabase& database)
+        : m_database(database) {
+    }
+
     virtual ~SearchQueryParser();
 
     std::unique_ptr<QueryNode> parseQuery(
@@ -27,6 +31,8 @@ class SearchQueryParser {
 
     QString getTextArgument(QString argument,
                             QStringList* tokens) const;
+
+    TrackCollection* m_pTrackCollection;
 
     QSqlDatabase m_database;
     QStringList m_textFilters;

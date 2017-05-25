@@ -290,6 +290,8 @@ class CrateStorage: public SqlStorage {
             CrateId crateId) const;
     CrateTrackSelectResult selectTrackCratesSorted(
             TrackId trackId) const;
+    CrateTrackSelectResult selectTracksSortedByCrateNameLike(
+            const QString& crateNameLike) const;
 
     // Returns the set of crate ids for crates that contain any of the
     // provided track ids.

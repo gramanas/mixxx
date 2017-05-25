@@ -5,6 +5,7 @@
 #include "library/queryutil.h"
 #include "track/keyutils.h"
 #include "library/dao/trackschema.h"
+#include "library/crate/cratestorage.h"
 #include "util/db/sqllikewildcards.h"
 
 namespace {
@@ -172,29 +173,22 @@ QString TextFilterNode::toSql() const {
     return concatSqlClauses(searchClauses, "OR");
 }
 
-CrateFilterNode::CrateFilterNode(const QSqlDatabase& database,
-                                 const QString& argument)
-    : m_database(database),
-      m_argument(argument) {
-    getTrackIds();
+CrateFilterNode::CrateFilterNode(const QString& argument,
+                                 TrackCollection* pTrackCollection)
+    : m_argument(argument),
+      m_pTrackCollection(pTrackCollection) {
+    init();
 }
 
-void CrateFilterNode::getTrackIds() {
-    FieldEscaper escaper(m_database);
+void CrateFilterNode::init() {
+    FieldEscaper escaper(m_pTrackCollection->database());
     QString escapedArgument = escaper.escapeString(kSqlLikeMatchAll + m_argument + kSqlLikeMatchAll);
 
-    QSqlQuery query(m_database);
-    QString queryString = CrateStorage::formatQueryForTrackIdsByCrateNameLike(escapedArgument);
-    query.setForwardOnly(true);
-    query.prepare(queryString);
+    CrateTrackSelectResult crateTracks(
+        m_pTrackCollection->crates().selectTracksSortedByCrateNameLike(escapedArgument));
 
-    qDebug() << "Crate filter query: " << queryString;
-
-    if (query.exec()) {
-
-        while (query.next()) {
-            m_trackIds.push_back(TrackId(query.value(0)));
-        }
+    while (crateTracks.next()) {
+        m_trackIds.push_back(crateTracks.trackId());
     }
 }
 
